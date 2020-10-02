@@ -1,0 +1,90 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>View</title>
+    <style>
+        .div-structures {
+            border: solid 1px #000;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <button id="get_services_button">Get Services</button>
+    <div id="main_workspace">
+
+    </div>
+    <div id="sample_chocho">
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        var sampleChocho;
+
+        function grabModalDocument(endpoint) {
+            $.ajax({
+                "url": endpoint,
+                method: "GET",
+                dataType: "TEXT",
+                success: doc => modalDocumentGrabbed(doc)
+            });
+        }
+
+        function modalDocumentGrabbed(doc) {
+            let htmlDoc = $(doc);
+            sampleChocho.append(htmlDoc);
+        }
+
+        $(document).ready(e => {
+            var getServicesBtn = $("#get_services_button");
+            var mainWorkspace = $("#main_workspace");
+            sampleChocho = $("#sample_chocho");
+
+            getServicesBtn.click(e => {
+
+                $.ajax({
+                    url: "/services/browse",
+                    method: "GET",
+                    dataType: "JSON",
+                    success: services => {
+                        $.each(services, (i1, service) => {
+                            let servH = $(`<h1>${service.ServiceName}</h1>`);
+                            let servSpc = $("<div class='div-structures'></div>");
+
+                            mainWorkspace.append(servH);
+                            mainWorkspace.append(servSpc);
+
+                            $.each(service.Workspaces, (i, workspace) => {
+                                let workH = $(`<h1>${workspace.WorkspaceName}</h1>`);
+                                let workSpc = $("<div class='div-structures'></div>");
+
+                                servSpc.append(workH);
+                                servSpc.append(workSpc);
+
+                                $.each(workspace.Actions, (i, action) => {
+                                    let actH = $(`<button>${action.ActionName}</button>`);
+
+                                    actH.click(e => {
+                                        grabModalDocument(action.ModalSource);
+                                    });
+
+                                    workSpc.append(actH);
+                                });
+                            });
+                        });
+                    }
+                });
+
+            });
+        });
+    </script>
+</body>
+</html>
